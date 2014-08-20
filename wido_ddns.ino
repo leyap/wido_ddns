@@ -19,8 +19,8 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 
 
 
-#define WLAN_SSID       "DFRobot-Internal"           // cannot be longer than 32 characters!
-#define WLAN_PASS       "zwrobot2014"
+#define WLAN_SSID       "ssid"           // cannot be longer than 32 characters!
+#define WLAN_PASS       "password"
 // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
 #define WLAN_SECURITY   WLAN_SEC_WPA2
 
@@ -30,7 +30,7 @@ uint32_t timeout;
 char checkipData[20];
 uint32_t ddnsip;
 uint32_t ddns_checkip = cc3000.IP2U32 (209,208,4,56);
-char *ddns_get_string = "GET /nic/update?u=jshield&p=dfrobot2014&hostname=outlet.ddns.info";
+char *ddns_get_string = "GET /nic/update?u=yourname&p=yourpassword&hostname=outlet.ddns.info";
 uint32_t ddns_update_time = 1000*60;
 
 //
