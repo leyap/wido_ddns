@@ -17,6 +17,8 @@
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
 		SPI_CLOCK_DIVIDER); // you can change this clock speed
 
+
+
 #define WLAN_SSID       "DFRobot-Internal"           // cannot be longer than 32 characters!
 #define WLAN_PASS       "zwrobot2014"
 // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
@@ -28,8 +30,11 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 uint32_t timeout;
 char checkipData[20];
 uint32_t ddnsip;
+char *ddns_get_string = "GET /nic/update?u=jshield&p=dfrobot2014&hostname=outlet.ddns.info";
+uint32_t ddns_update_time = 1000*60;
+uint32_t checkip = cc3000.IP2U32 (209,208,4,56);
 
-
+//
 void setup(void) {
 	pinMode (13, OUTPUT);
 	pinMode (12, OUTPUT);
@@ -91,10 +96,18 @@ void setup(void) {
 //
 void loop(void) {
 	///////////////////////////////////////////////////////
-	if (millis () - timeout > 10000) {
+	ddns_update ();
+
+	/////////////////////////////////////////////////////////
+}
+
+//
+void ddns_update () {
+  static uint32_t timeout = 0;
+if (millis () - timeout > ddns_update_time) {
 		timeout = millis ();  
 		Serial.println ("checkIP");
-		uint32_t checkip = cc3000.IP2U32 (209,208,4,56);
+		
 		//uint32_t checkip = cc3000.IP2U32 (192,168,0,9);
 		Adafruit_CC3000_Client checkClient = cc3000.connectTCP (checkip, 80);
 		if (checkClient.connected ()) {
@@ -110,29 +123,26 @@ void loop(void) {
 				if (sub)
 					*sub = '\0';
 				Serial.println (checkipBuffer);
-				if (strcmp (checkipData, checkipBuffer) != 0) {
+				//if (strcmp (checkipData, checkipBuffer) != 0) {
 					Serial.println ("ip is changed");
 					Adafruit_CC3000_Client ddnsClient = cc3000.connectTCP (ddnsip, 80);     
 					strcpy (checkipData, checkipBuffer);
 					if (ddnsClient.connected()) {
-						Serial.print ("connected ddns");
-						ddnsClient.fastrprintln ("GET /nic/update?u=jshield&p=dfrobot2014&hostname=outlet.ddns.info");
+						Serial.println ("connected ddns server");
+						ddnsClient.fastrprintln (ddns_get_string);
 						uint32_t ddnstimeout = millis ();
-						while (!ddnsClient.available() && millis () - ddnstimeout < 2000);
+						while (!ddnsClient.available() && millis () - ddnstimeout < 1000);
 						while (ddnsClient.available ()) {
 							char data = ddnsClient.read ();
 							Serial.print (data);
 						}
-						Serial.println ("===");
 					}
 					ddnsClient.close();
-				}
+				//}
 
 			}
 		}
 	}
-
-	/////////////////////////////////////////////////////////
 }
 
 bool displayConnectionDetails(void) {
