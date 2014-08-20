@@ -26,13 +26,12 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 
 #define LISTEN_PORT           80   // What TCP port to listen on for connections.
 
-//Adafruit_CC3000_Server webServer(LISTEN_PORT);
 uint32_t timeout;
 char checkipData[20];
 uint32_t ddnsip;
+uint32_t ddns_checkip = cc3000.IP2U32 (209,208,4,56);
 char *ddns_get_string = "GET /nic/update?u=jshield&p=dfrobot2014&hostname=outlet.ddns.info";
 uint32_t ddns_update_time = 1000*60;
-uint32_t checkip = cc3000.IP2U32 (209,208,4,56);
 
 //
 void setup(void) {
@@ -103,18 +102,15 @@ void loop(void) {
 
 //
 void ddns_update () {
-  static uint32_t timeout = 0;
-if (millis () - timeout > ddns_update_time) {
+	static uint32_t timeout = 0;
+	if (millis () - timeout > ddns_update_time) {
 		timeout = millis ();  
 		Serial.println ("checkIP");
-		
-		//uint32_t checkip = cc3000.IP2U32 (192,168,0,9);
-		Adafruit_CC3000_Client checkClient = cc3000.connectTCP (checkip, 80);
+		Adafruit_CC3000_Client checkClient = cc3000.connectTCP (ddns_checkip, 80);
 		if (checkClient.connected ()) {
 			checkClient.fastrprintln ("GET /");
 			checkClient.fastrprintln ("");
-			//        delay (1000);  
-			while (!checkClient.available() && millis () - timeout < 2000);
+			while (!checkClient.available() && millis () - timeout < 1000);
 			if (checkClient.available () > 0) {
 				char checkipBuffer[20];
 				checkClient.read (checkipBuffer, 20, 0);
@@ -123,7 +119,7 @@ if (millis () - timeout > ddns_update_time) {
 				if (sub)
 					*sub = '\0';
 				Serial.println (checkipBuffer);
-				//if (strcmp (checkipData, checkipBuffer) != 0) {
+				if (strcmp (checkipData, checkipBuffer) != 0) {
 					Serial.println ("ip is changed");
 					Adafruit_CC3000_Client ddnsClient = cc3000.connectTCP (ddnsip, 80);     
 					strcpy (checkipData, checkipBuffer);
@@ -138,7 +134,7 @@ if (millis () - timeout > ddns_update_time) {
 						}
 					}
 					ddnsClient.close();
-				//}
+				}
 
 			}
 		}
@@ -147,7 +143,6 @@ if (millis () - timeout > ddns_update_time) {
 
 bool displayConnectionDetails(void) {
 	uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
-
 	if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv)) {
 		Serial.println(F("Unable to retrieve the IP Address!\r\n"));
 		return false;
@@ -167,4 +162,5 @@ bool displayConnectionDetails(void) {
 		return true;
 	}
 }
+
 
