@@ -86,31 +86,30 @@ void wido_ddns::ddns_update () {
 				Serial.print ("myip is: ");
 				Serial.println (checkipBuffer);
 				if (strcmp (checkipData, checkipBuffer) != 0) {
-					//Serial.println ("ip is changed");
+					Serial.println ("ip is changed");
 					strcpy (checkipData, checkipBuffer);
 					//Serial.println ("connecting ddns server..."); 
 					Adafruit_CC3000_Client ddnsClient = _cc3000->connectTCP (ddnsip, 80);   
 					if (ddnsClient.connected()) {
 						//Serial.println ("connected ddns server");  
 						ddnsClient.fastrprintln (ddns_get_strings);
-						//ddnsClient.fastrprintln (ddns_get_string);
 						//Serial.println (ddns_get_strings);
-						//* uint32_t ddnstimeout = millis ();
-						//* while (!ddnsClient.available() && millis () - ddnstimeout < 1000);
-						//* while (ddnsClient.available ()) {
-						//* 	char data = ddnsClient.read ();
-						//* 	Serial.print (data);
-						//* }
-						//* Serial.println ();
+						uint32_t ddnstimeout = millis ();
+						while (!ddnsClient.available() && millis () - ddnstimeout < 1000);
+						while (ddnsClient.available ()) {
+							char data = ddnsClient.read ();
+							Serial.print (data);
+						}
+						Serial.println ();
 					} else
-						;//Serial.println ("Can't connect ddns server");
+						Serial.println ("Can't connect ddns server");
 					ddnsClient.close();
 				} else 
-					;//Serial.println ("ip is not changed");
+					Serial.println ("ip is not changed");
 			} else 
-				;//Serial.println ("error! can't get checkip data");
+				Serial.println ("error! can't get checkip data");
 		} else 
-			;//Serial.println ("error! can't connect checkip server!");
+			Serial.println ("error! can't connect checkip server!");
 	}
 }
 
