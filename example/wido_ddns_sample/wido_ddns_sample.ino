@@ -25,7 +25,7 @@
 /*
  *	name:				wido_ddns library
  *	version:			0.1
- *	Author:				lisper <lisper.li@dfrobot.com>
+ *	Author:				HuoSen, lisper <lisper.li@dfrobot.com>
  *	Date:				2014-08-21
  *	official website:		http://www.dfrobot.com
  *	Description:			ddns that run on wido board, this is sample code
@@ -42,6 +42,8 @@
 #define password "***********"
 #define hostname "yourhostname"
 
+uint32_t ddnstime = 600000;
+
 // These are the interrupt and control pins
 #define ADAFRUIT_CC3000_IRQ   7  // MUST be an interrupt pin!
 // These can be any two pins
@@ -53,7 +55,6 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 		SPI_CLOCK_DIVIDER); // you can change this clock speed
 
 
-
 #define WLAN_SSID       "ssid-name"           // cannot be longer than 32 characters!
 #define WLAN_PASS       "*********"
 // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
@@ -63,6 +64,7 @@ Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ
 
 Adafruit_CC3000_Server webServer(LISTEN_PORT);
 wido_ddns ddns = wido_ddns (cc3000);
+boolean led_state;
 //
 void setup(void) {
 	pinMode (13, OUTPUT);
@@ -108,30 +110,29 @@ void setup(void) {
 
 	// Start listening for connections
 	webServer.begin();
-	uint32_t myip = 0;
-	while (myip == 0) {
-		if (! cc3000.getHostByName("nic.changeip.com", &myip)) {
+	uint32_t the_ddns_ip = 0;
+	while (the_ddns_ip == 0) {
+		if (! cc3000.getHostByName("nic.changeip.com", &the_ddns_ip)) {
 			Serial.println(F("Couldn't resolve!"));
 		}
 		delay(500);
 	}
 	Serial.println("ddns ip:");
-	cc3000.printIPdotsRev(myip);
+	cc3000.printIPdotsRev(the_ddns_ip);
 	Serial.println();
 
 	//ddns.set_checkip (cc3000.IP2U32 (209,208,4,56));
-	ddns.set_ddnsip (myip);
-	uint32_t ddnstime = 60000;
-	ddns.set_ddns_time (ddnstime);
+	ddns.set_ddnsip (the_ddns_ip);
+	ddns.set_delay_time (ddnstime);
 	Serial.println (ddnstime);
-	ddns.set_ddns_get_string (username, password, hostname);
+	ddns.set_string (username, password, hostname);
 
 	Serial.println(F("Listening for connections..."));
 }
 
 //
 void loop(void) {
-	ddns.ddns_update ();
+	ddns.update ();
 	webServerRun ();
 }
 
@@ -162,25 +163,32 @@ void webServerRun () {
 			if (strncmp (sub, "open", 4) == 0) {
 				Serial.println ("clicked open");
 				digitalWrite (12, HIGH);  
-				digitalWrite (13, HIGH);  
+				digitalWrite (13, HIGH); 
+                                led_state = true;
 			} 
 			else if (strncmp (sub, "close", 5) == 0) {
 				Serial.println ("clicked close");
 				digitalWrite (12, LOW);
 				digitalWrite (13, LOW);
+                                led_state = false;
 			}
 			break;
-
 		}
 		webServer.write ("<!DOCTYPE html>");
 		webServer.write ("<html>");
-		webServer.write ("<body>");
+		webServer.write ("<body  style=\"font-size:50px\">");
 		webServer.write ("<form action=\"control\" method=\"get\">");
-		webServer.write ("<button name=\"led\" type=\"submit\" value=\"open\">Open</button><br />");
-		webServer.write ("<button name=\"led\" type=\"submit\" value=\"close\">Close</button>");
+		webServer.write ("<button name=\"led\" style=\"height:200px;width:400px;font-size:50px\"");
+		webServer.write ("type=\"submit\" value=\"open\">Open</button>");
+		webServer.write ("<br><br>");
+		webServer.write ("<button name=\"led\" style=\"height:200px;width:400px;font-size:50px\"");
+                webServer.write ("type=\"submit\" value=\"close\">Close</button>");
 		webServer.write ("</form>");
-		webServer.write ("</body>");
+                webServer.write ("<br><br><p>Pin12 status: ");
+		webServer.write (led_state ? "Opened" : "Closed");		
+                webServer.write ("</p></body>");
 		webServer.write ("</html>");
+                delay (20);
 		client.close();
 	}
 	client.close();
@@ -209,5 +217,4 @@ bool displayConnectionDetails(void) {
 		return true;
 	}
 }
-
 

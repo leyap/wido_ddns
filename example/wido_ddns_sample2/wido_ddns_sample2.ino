@@ -25,7 +25,7 @@
 /*
  *	name:				wido_ddns library
  *	version:			0.1
- *	Author:				lisper <lisper.li@dfrobot.com>
+ *	Author:				HuoSen, lisper <lisper.li@dfrobot.com>
  *	Date:				2014-08-21
  *	official website:		http://www.dfrobot.com
  *	Description:			ddns that run on wido board, this is sample code
@@ -41,6 +41,8 @@
 #define username "yourname"
 #define password "***********"
 #define hostname "yourhostname"
+
+uint32_t ddns_delay_time = 60000;
 
 // These are the interrupt and control pins
 #define ADAFRUIT_CC3000_IRQ   7  // MUST be an interrupt pin!
@@ -106,17 +108,16 @@ void setup(void) {
 	webServer.begin();
 	uint32_t myip = cc3000.IP2U32 (209,208,4,62);
 	ddns.set_ddnsip (myip);
-	uint32_t ddnstime = 60000;
-	ddns.set_ddns_time (ddnstime);
-	Serial.println (ddnstime);
-	ddns.set_ddns_get_string (username, password, hostname);
+	ddns.set_delay_time (ddns_delay_time);
+	Serial.println (ddns_delay_time);
+	ddns.set_string (username, password, hostname);
 
 	Serial.println(F("Listening for connections..."));
 }
 
 //
 void loop(void) { 
-	ddns.ddns_update ();
+	ddns.update ();
 	webServerRun ();
 }
 
@@ -171,4 +172,3 @@ void webServerRun () {
 	}
 	client.close();
 }
-

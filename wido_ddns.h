@@ -25,7 +25,7 @@
 /*
  *	name:				wido_ddns library
  *	version:			0.1
- *	Author:				lisper <lisper.li@dfrobot.com>
+ *	Author:				HuoSen, lisper <lisper.li@dfrobot.com>
  *	Date:				2014-08-21
  *	official website:	http://www.dfrobot.com
  *	Description:		ddns that run on wido board
@@ -47,11 +47,9 @@ class wido_ddns {
 		uint32_t checkip;
 
 		void set_ddnsip (uint32_t myddnsip);
-		void set_checkip (uint32_t mycheckip);
-
-		void set_ddns_get_string (char *username, char *password, char *hostname);
-
-		void set_ddns_time (uint32_t my_time);
-		void ddns_update ();
+		void set_string (char *username, char *password, char *hostname);
+		void set_delay_time (uint32_t my_time);
+		void update ();
 
 };
+

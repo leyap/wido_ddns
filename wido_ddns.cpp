@@ -25,7 +25,7 @@
 /*
  *	name:				wido_ddns library
  *	version:			0.1
- *	Author:				lisper <lisper.li@dfrobot.com>
+ *	Author:				HuoSen, lisper <lisper.li@dfrobot.com>
  *	Date:				2014-08-21
  *	official website:	http://www.dfrobot.com
  *	Description:		ddns that run on wido board
@@ -41,7 +41,7 @@
 wido_ddns::wido_ddns (Adafruit_CC3000 &my_cc3000) {
 	_cc3000 = &my_cc3000;
 	checkip = _cc3000->IP2U32 (209,208,4,56);
-	ddns_update_time = 6000000;
+	ddns_update_time = 600000;
 }
 
 //
@@ -50,7 +50,7 @@ void wido_ddns::set_ddnsip (uint32_t myddnsip) {
 }
 
 //
-void wido_ddns::set_ddns_get_string (char *username, char *password, char *hostname) {
+void wido_ddns::set_string (char *username, char *password, char *hostname) {
 	sprintf (ddns_get_strings, "GET /nic/update?u=%s&p=%s&hostname=%s", 
 			username, 
 			password, 
@@ -58,14 +58,12 @@ void wido_ddns::set_ddns_get_string (char *username, char *password, char *hostn
 }
 
 //
-void wido_ddns::set_ddns_time (uint32_t my_time) {
+void wido_ddns::set_delay_time (uint32_t my_time) {
 	ddns_update_time = my_time;
-	//Serial.print ("time = ");
-	//Serial.println (ddns_update_time);
 }
 
 //
-void wido_ddns::ddns_update () {
+void wido_ddns::update () {
 	static uint32_t timeout = 0;
 	if (millis () - timeout > ddns_update_time) {
 		timeout = millis ();  
